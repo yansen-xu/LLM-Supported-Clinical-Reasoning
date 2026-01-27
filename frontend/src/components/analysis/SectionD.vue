@@ -240,35 +240,12 @@ export default {
       }
     };
     
-    // 检查是否显示previous按钮（当前案例前面有已完成的案例）
+    // 检查是否显示previous按钮（当前案例不是第一个就显示）
     const checkIfShowPreviousBtn = async (username, caseIndex) => {
       try {
-        // 检查是否有前面的案例
-        if (caseIndex <= 0) {
-          showPreviousBtn.value = false;
-          return;
-        }
-        
-        // 检查前面的任何案例是否有已保存的对话
-        let hasCompletedPrevious = false;
-        for (let idx = 0; idx < caseIndex; idx++) {
-          try {
-            const response = await axios.get(`${backendBaseURL.value}/api/get-saved-conversation`, {
-              params: {
-                username: username,
-                case_index: idx
-              }
-            });
-            if (response.data.status === 'success') {
-              hasCompletedPrevious = true;
-              break;
-            }
-          } catch (error) {
-            // 该案例没有保存的对话，继续检查下一个
-          }
-        }
-        
-        showPreviousBtn.value = hasCompletedPrevious;
+        // 只有当不是第一个案例时，才显示previous按钮
+        showPreviousBtn.value = caseIndex > 0;
+        console.log(`用户 ${username} 当前案例索引: ${caseIndex}, 显示previous按钮: ${showPreviousBtn.value}`);
       } catch (error) {
         console.error("检查previous按钮状态失败:", error);
         showPreviousBtn.value = false;

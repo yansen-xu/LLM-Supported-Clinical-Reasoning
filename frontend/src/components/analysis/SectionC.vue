@@ -4,7 +4,16 @@
     <div class="case-info-section">
       <div class="case-header">
         <h3>Case {{ currentCaseIndex + 1 }}</h3>
-        <span class="progress-indicator">Progress: ({{ currentCaseIndex + 1 }}/{{ totalCases }})</span>
+        <div class="header-right">
+          <button 
+            @click="resetConversation" 
+            class="reset-btn"
+            title="Clear conversation and start over"
+          >
+            🔄 Reset
+          </button>
+          <span class="progress-indicator">Progress: ({{ currentCaseIndex + 1 }}/{{ totalCases }})</span>
+        </div>
       </div>
       <div v-if="formattedCaseData">
         <pre>{{ formattedCaseData }}</pre>
@@ -100,8 +109,6 @@ export default {
 
     // 轮询相关状态
     let pollTimer = null;
-    let lastMainSuit = null; // 记录上一次的主诉，用于检测变化
-
     // 分类标签映射
     const categoryLabels = {
       'symptom': 'Symptom',
@@ -198,6 +205,7 @@ export default {
 
       const userId = localStorage.getItem('analysis_user_id') || 'default_user';
       const username = localStorage.getItem('analysis_username') || '';
+      const currentCaseIdx = currentCaseIndex.value; // 获取当前案例索引
       
       // 检查用户是否已登录
       if (!username || username === '') {
@@ -209,47 +217,38 @@ export default {
         const response = await axios.get(`${backendBaseURL.value}/api/get-main-suit?user_id=${userId}&username=${username}`);
         if (response.data.status === 'success') {
             const mainSuit = response.data.main_suit;
-            // 轮询过程中，检查主诉是否发生变化
-            if (mainSuit !== lastMainSuit) {
-              console.log(`用户 ${username} 主诉从 "${lastMainSuit}" 更新为 "${mainSuit}"`);
-              lastMainSuit = mainSuit;
-              messages.value = [
-                { 
-                  content: `Hello, doctor. I'm ${mainSuit}。`, 
-                  role: "assistant", 
-                  timestamp: new Date(),
-                  category: 'symptom'  // 初始主诉通常属于症状类别
-                }
-              ];
-            }
+            // 每次都从后端获取新数据，不使用缓存
+            console.log(`用户 ${username} 案例 ${currentCaseIdx} 的主诉: "${mainSuit}"`);
+            messages.value = [
+              { 
+                content: `Hello, doctor. I'm ${mainSuit}。`, 
+                role: "assistant", 
+                timestamp: new Date(),
+                category: 'symptom'  // 初始主诉通常属于症状类别
+              }
+            ];
         } else {
             // 如果获取失败，使用默认消息
-            if (lastMainSuit !== "default") {
-              lastMainSuit = "default";
-              messages.value = [
-                { 
-                  content: "医生你好，我有一些不舒服。", 
-                  role: "assistant", 
-                  timestamp: new Date(),
-                  category: 'symptom'  // 默认消息也归类为症状
-                }
-              ];
-            }
+            messages.value = [
+              { 
+                content: "Hello, doctor. I'm not feeling well.", 
+                role: "assistant", 
+                timestamp: new Date(),
+                category: 'symptom'  // 默认消息也归类为症状
+              }
+            ];
         }
       } catch (error) {
         console.log("获取主诉失败，使用默认消息:", error.message);
         // 如果获取失败，使用默认消息
-        if (lastMainSuit !== "default") {
-          lastMainSuit = "default";
-          messages.value = [
-            { 
-              content: "医生你好，我有一些不舒服。", 
-              role: "assistant", 
-              timestamp: new Date(),
-              category: 'symptom'  // 默认消息也归类为症状
-            }
-          ];
-        }
+        messages.value = [
+          { 
+            content: "Hello, doctor. I'm not feeling well.", 
+            role: "assistant", 
+            timestamp: new Date(),
+            category: 'symptom'  // 默认消息也归类为症状
+          }
+        ];
       }
     };
 
@@ -277,10 +276,7 @@ export default {
       messages.value = [];
       inputMessage.value = '';
       
-      // 2. 重置lastMainSuit状态，确保能检测到新案例的变化
-      lastMainSuit = null;
-      
-      // 3. 重新启动轮询（因为现在又只有一条消息了）
+      // 2. 重新启动轮询（因为现在又只有一条消息了）
       startPolling();
       
       console.log("已清空对话内容并重新启动轮询");
@@ -339,9 +335,17 @@ export default {
           
           // 滚动到底部
           nextTick(scrollToBottom);
+        } else {
+          // 如果没有已保存的对话，加载原始案例数据（初始主诉）
+          console.log("没有已保存的对话，加载原始案例数据");
+          messages.value = [];
+          startPolling(); // 启动轮询以获取初始主诉信息
         }
       } catch (error) {
-        console.error("加载已保存的对话失败:", error);
+        // 加载已保存的对话失败，也加载原始案例数据
+        console.log("加载已保存的对话失败，加载原始案例数据:", error.message);
+        messages.value = [];
+        startPolling(); // 启动轮询以获取初始主诉信息
       }
     };
 
@@ -449,15 +453,28 @@ export default {
         messages.value = [];
         inputMessage.value = '';
         
-        // 2. 重置lastMainSuit状态，确保能检测到新案例的变化
-        lastMainSuit = null;
-        
-        // 3. 重新启动轮询（因为现在又只有一条消息了）
+        // 2. 重新启动轮询（因为现在又只有一条消息了）
         startPolling();
         
         console.log("已清空对话内容并重新启动轮询");
       } catch (error) {
         console.error("下一个请求失败", error);
+      }
+    };
+
+    // 重置对话函数 - 清除所有对话，只保留初始消息
+    const resetConversation = async () => {
+      try {
+        // 1. 清空所有消息
+        messages.value = [];
+        inputMessage.value = '';
+        
+        // 2. 重新启动轮询以获取初始主诉
+        startPolling();
+        
+        console.log("对话已重置，等待初始消息");
+      } catch (error) {
+        console.error("重置对话失败", error);
       }
     };
 
@@ -506,6 +523,7 @@ export default {
       sendMessage,
       messageContainer,
       next,
+      resetConversation,
       currentCaseIndex,
       totalCases,
       formattedCaseData,
@@ -551,6 +569,12 @@ export default {
   font-weight: 600;
   color: #333;
   margin: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 0.8vw, 12px);
 }
 
 .progress-indicator {
@@ -610,6 +634,47 @@ export default {
   flex: 1;
   overflow: hidden;
   min-height: 0;
+}
+
+.chat-toolbar {
+  padding: clamp(6px, 0.8vh, 12px) clamp(10px, 1.2vh, 18px);
+  background: #f5f7fa;
+  border-bottom: clamp(1px, 0.1vh, 2px) solid #e1e4e8;
+  display: flex;
+  gap: clamp(6px, 0.8vw, 12px);
+  flex-shrink: 0;
+}
+
+.reset-btn {
+  font-size: clamp(12px, 1.3vw, 16px);
+  padding: clamp(4px, 0.6vh, 8px) clamp(8px, 1vw, 14px);
+  background: #f56c6c;
+  color: white;
+  border: none;
+  border-radius: clamp(3px, 0.4vw, 6px);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 0.5vw, 8px);
+}
+
+.reset-btn:hover {
+  background: #f78989;
+  box-shadow: 0 2px 6px rgba(245, 108, 108, 0.3);
+  transform: translateY(-1px);
+}
+
+.reset-btn:active {
+  transform: translateY(0);
+}
+
+.reset-btn:disabled {
+  background: #b6bfc8;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .chat-messages {

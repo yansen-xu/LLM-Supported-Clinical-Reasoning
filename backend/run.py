@@ -229,7 +229,7 @@ def get_next_case_index(username):
 
 
 def get_previous_case_index(username):
-    """获取用户上一个已完成case的索引"""
+    """获取用户上一个案例的索引（允许返回任何前面的案例，不仅仅是已完成的）"""
     # 获取案例文件列表
     case_files = get_user_case_files(username)
     total_cases = len(case_files)
@@ -242,29 +242,14 @@ def get_previous_case_index(username):
     user_state = get_user_state(username)
     current_index = user_state['current_case_index']
 
-    # 统计每个case文件夹中是否有已完成的JSON文件
-    conversations_dir = config.CONVERSATIONS_DIR
-
-    # 期望的用户保存文件名
-    expected_filename = f"{username}.json"
-
-    # 从当前索引向前查找已完成的案例
-    for idx in range(current_index - 1, -1, -1):
-        if idx < len(case_files):
-            case_file_path = case_files[idx]
-            case_folder = case_file_path.split('/')[0]
-            case_dir = os.path.join(conversations_dir, case_folder)
-
-            if os.path.exists(case_dir):
-                # 精确查找该用户的json文件 (filename == "{username}.json")
-                user_file_path = os.path.join(case_dir, expected_filename)
-                if os.path.exists(user_file_path):
-                    print(
-                        f"用户 {username} 的上一个已完成案例索引: {idx} ({case_folder}), 文件: {expected_filename}")
-                    return idx
-
-    print(f"用户 {username} 没有已完成的上一个案例")
-    return None
+    # 如果当前索引大于0，则返回前一个案例索引
+    if current_index > 0:
+        previous_index = current_index - 1
+        print(f"用户 {username} 从案例 {current_index} 返回到上一个案例 {previous_index}")
+        return previous_index
+    else:
+        print(f"用户 {username} 已在第一个案例，无法返回前一个")
+        return None
 
 
 @app.route('/get-ai-response', methods=['POST'])
@@ -383,13 +368,13 @@ def handle_previous_step():
 
         user_state = get_user_state(username)
 
-        # 获取上一个已完成的案例索引
+        # 获取上一个案例索引
         previous_case_index = get_previous_case_index(username)
 
         if previous_case_index is None:
             return jsonify({
                 'status': 'error',
-                'message': '没有上一个已完成的案例'
+                'message': 'Already at the first case'
             }), 400
 
         print(
@@ -406,7 +391,7 @@ def handle_previous_step():
 
         return jsonify({
             'status': 'success',
-            'message': '上一步处理成功'
+            'message': 'Previous step processed successfully'
         })
 
     except Exception as e:
@@ -414,7 +399,7 @@ def handle_previous_step():
         print(f"处理上一步请求出错: {str(e)}\n{traceback.format_exc()}")
         return jsonify({
             'status': 'error',
-            'message': '处理上一步请求失败'
+            'message': 'Failed to process previous step'
         }), 500
 
 
