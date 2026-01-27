@@ -1,0 +1,208 @@
+/* 全局响应式样式 */
+
+/* 视口设置 */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: clamp(10px, 0.9vw, 14px);
+  line-height: 1.4;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* 通用响应式工具类 */
+.responsive-text {
+  font-size: clamp(10px, 1vw, 14px);
+}
+
+.responsive-heading {
+  font-size: clamp(14px, 1.5vw, 20px);
+}
+
+.responsive-padding {
+  padding: clamp(6px, 0.8vw, 12px);
+}
+
+.responsive-margin {
+  margin: clamp(6px, 0.8vw, 12px);
+}
+
+.responsive-gap {
+  gap: clamp(6px, 1vw, 12px);
+}
+
+/* 响应式按钮 */
+.responsive-btn {
+  padding: clamp(4px, 0.8vw, 10px) clamp(10px, 1.2vw, 16px);
+  font-size: clamp(9px, 0.9vw, 14px);
+  border-radius: clamp(2px, 0.4vw, 5px);
+  border: clamp(1px, 0.2vw, 2px) solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.responsive-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 响应式输入框 */
+.responsive-input {
+  padding: clamp(6px, 1vw, 12px);
+  font-size: clamp(10px, 1vw, 16px);
+  border-radius: clamp(3px, 0.5vw, 6px);
+  border: clamp(1px, 0.2vw, 2px) solid #ddd;
+}
+
+/* 响应式卡片 */
+.responsive-card {
+  padding: clamp(8px, 1.2vw, 16px);
+  border-radius: clamp(3px, 0.6vw, 8px);
+  border: clamp(1px, 0.2vw, 2px) solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 响应式网格 */
+.responsive-grid {
+  display: grid;
+  gap: clamp(8px, 1.2vw, 16px);
+}
+
+/* 响应式弹性布局 */
+.responsive-flex {
+  display: flex;
+  gap: clamp(8px, 1.2vw, 16px);
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: clamp(4px, 0.5vw, 8px);
+  height: clamp(4px, 0.5vw, 8px);
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: clamp(2px, 0.3vw, 4px);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: clamp(2px, 0.3vw, 4px);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 响应式断点 */
+@media (max-width: 1200px) {
+  html {
+    font-size: clamp(11px, 0.9vw, 15px);
+  }
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: clamp(10px, 0.8vw, 14px);
+  }
+  
+  .responsive-text {
+    font-size: clamp(10px, 1vw, 14px);
+  }
+  
+  .responsive-heading {
+    font-size: clamp(14px, 1.5vw, 20px);
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: clamp(9px, 0.7vw, 13px);
+  }
+  
+  .responsive-text {
+    font-size: clamp(9px, 0.9vw, 13px);
+  }
+  
+  .responsive-heading {
+    font-size: clamp(12px, 1.3vw, 18px);
+  }
+}
+
+@media (max-height: 600px) {
+  html {
+    font-size: clamp(9px, 0.7vw, 13px);
+  }
+}
+
+/* 高分辨率屏幕优化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .responsive-card {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* 打印样式 */
+@media print {
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  .responsive-card {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+  }
+}
+
+/* 减少动画（用户偏好） */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+  .responsive-card {
+    border-width: 2px;
+  }
+  
+  .responsive-btn {
+    border-width: 2px;
+  }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+  
+  .responsive-card {
+    background-color: #2d2d2d;
+    border-color: #444;
+  }
+  
+  .responsive-input {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #ffffff;
+  }
+}

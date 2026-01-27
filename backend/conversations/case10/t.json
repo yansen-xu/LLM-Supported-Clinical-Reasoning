@@ -1,0 +1,24 @@
+{
+  "conversation": [
+    {
+      "content": "Hello, doctor. I'm Abdominal pain and distension with recurrent vomiting。",
+      "role": "assistant",
+      "timestamp": "2026-01-26T15:56:38.967Z",
+      "category": "symptom"
+    },
+    {
+      "content": "what's wrong",
+      "role": "user",
+      "timestamp": "2026-01-26T15:56:46.568Z",
+      "category": "other"
+    },
+    {
+      "content": "I’m not sure what’s wrong—I just know I’ve been feeling really awful. My belly’s been hurting nonstop for days, like a heavy, dull ache high up, and now it’s spreading around to my back like a tight belt. I’m bloated, can’t eat anything, haven’t pooped in over four days, and I’ve been throwing up repeatedly today. I also ran a fever, felt weak, and noticed my skin and the whites of my eyes turned yellow—like I’d been dipped in tea. I’ve been drinking heavily during the holiday, but this feels way beyond a hangover.",
+      "role": "assistant",
+      "timestamp": "2026-01-26T15:56:54.201Z",
+      "category": "symptom"
+    }
+  ],
+  "Diagnosis": "",
+  "Treatment": ""
+}

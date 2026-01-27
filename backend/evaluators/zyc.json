@@ -1,0 +1,69 @@
+{
+  "username": "zyc",
+  "created_at": "2026-01-26T22:16:44.701241",
+  "evaluations": [],
+  "current_case_index": 0,
+  "total_cases_completed": 0,
+  "evaluation_results": {
+    "case10": {
+      "ranking": [
+        "a",
+        "Deepseek-V3"
+      ],
+      "tiers": {
+        "good": [
+          "a"
+        ],
+        "medium": [
+          "Deepseek-V3"
+        ],
+        "poor": []
+      },
+      "saved_at": "2026-01-26T22:17:29.633369",
+      "a": {
+        "dimensions": {
+          "Logic of consultation process-Whether the questioning is clear and coherent, logically consistent?": 1,
+          "Accuracy of diagnostic conclusion-Whether the final diagnosis is correct?": 1,
+          "Comprehensiveness of diagnostic conclusion-Whether secondary diagnoses are comprehensive?": 1,
+          "Reasonableness of reasoning process-Whether the diagnostic reasoning process is reasonable?": 1,
+          "Appropriateness of treatment principles-Whether the treatment recommendations are appropriate?": 1,
+          "Comprehensiveness of treatment principles-Whether the treatment is comprehensive?": 1,
+          "Perceived clinical professionalism-From the patient’s perspective, is this doctor’s diagnosis and treatment acceptable?": 1,
+          "AI perception-Do you think this 'doctor' is an AI or a real human doctor?": 1
+        }
+      },
+      "saved": true,
+      "Deepseek-V3": {
+        "dimensions": {}
+      },
+      "Expert": {
+        "dimensions": {}
+      },
+      "Gemini2.5pro": {
+        "dimensions": {}
+      },
+      "GPTo3-mini": {
+        "dimensions": {}
+      },
+      "GPTo3": {
+        "dimensions": {}
+      },
+      "Middle": {
+        "dimensions": {}
+      },
+      "Qwen3-235b-a22b-Thinking": {
+        "dimensions": {}
+      },
+      "Qwq-32b": {
+        "dimensions": {}
+      },
+      "Young": {
+        "dimensions": {}
+      },
+      "zyc": {
+        "dimensions": {}
+      }
+    }
+  },
+  "updated_at": "2026-01-26T22:17:24.331823"
+}
