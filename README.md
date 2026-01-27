@@ -8,6 +8,8 @@ This medical diagnostic assessment and testing platform is developed for our CHI
 2. **Evaluation Mode**: Compare doctor responses with pre-collected evaluators (LLMs and doctors with different experience levels), perform ranking, scoring, and assessment
 3. **Mixed Mode**: Run both analysis and evaluation modes simultaneously, supporting seamless switching between the two modes
 
+Please note that in our open-source version, we only provide the original case files and corresponding response records for **Case 8** and **Case 9** presented in the article.
+
 ## Core Features
 
 - **Multi-Evaluator Comparison**：Curated clinical cases are assessed by multiple LLMs (Deepseek-V3, GPT-4, Gemini, etc.) and clinicians across different experience levels, with all participants prompted via the unified instruction "xxx".
@@ -79,13 +81,13 @@ CORS_ORIGINS=http://localhost:8080,http://localhost:8081
 
 ### Method 1: Using Batch Scripts (Recommended for Windows Users)
 
-Use the following `.bat` scripts in the project root directory, run the corresponding `.bat` file in `cmd` to start the desired mode:
+Use the `.bat` scripts located in the project root directory. Run the corresponding `.bat` file in **Command Prompt (cmd)** to start the desired mode.
 
-#### 1. Mixed Mode - `start_mixed.bat`
+Note that a **Conda environment** is required.
 
-#### 2. Analysis Mode Only - `start_analysis.bat`
-
-#### 3. Evaluation Mode Only - `start_evaluation.bat`
+1. Mixed Mode - `start_mixed.bat`
+2. Analysis Mode Only - `start_analysis.bat`
+3. Evaluation Mode Only - `start_evaluation.bat`
 
 ### Method 2: Manual Startup (Cross-platform)
 
@@ -127,7 +129,31 @@ npm run evaluation
 
 ---
 
-## Data Flow and File Structure
+## Function Introduction
+
+In the open-source version of this system, we provide the full content of **Case 8** and **Case 9** from our paper, along with the response records of different large language models (LLMs) and physicians with varying levels of clinical experience.
+
+### Login Page
+
+### Analysis Mode
+
+![1769502560760](image/README/1769502560760.png)
+
+On the left side of the system is a dialogue interface that allows users to inquiry with a virtual patient powered by a large language model (LLM). The LLM’s responses are automatically organized into predefined categories, including symptoms, signs, physical examination findings, and diagnostic or laboratory test results.
+
+On the right panel, users are required to formulate and enter their diagnostic conclusions and treatment plans based on the information obtained from the patient interview.
+
+In the open-source version of our system, clicking **Next** automatically saves the current input, while the **Previous** button allows users to return to and review their earlier responses. The **Reset** button clears all prior dialogue records, enabling users to restart the task from the beginning.
+
+### Evaluation Mode
+
+![1769503128360](image/README/1769503128360.png)
+
+The interface consists of: (A) a ranking panel for ordering analyses; (B) a case information panel; (C) the original case description; (D) a conversation panel displaying the interaction history with the virtual patient; (E) a results panel showing submitted diagnoses and treatment plans alongside reference answers; and (F) a scoring panel for evaluating the analysis based on predefined criteria.
+
+When running the open-source version with  **start_mixed.bat** , the system supports flexible switching between **Evaluation Mode** and  **Analysis Mode** .
+
+## Systemta Flow and File Structure
 
 ### Core Data Directory Structure
 
@@ -145,7 +171,7 @@ backend/
 │   │   ├── Qwen3-235b-a22b-Thinking.json  # Qwen's response
 │   │   ├── Qwq-32b.json   # Qwq-32b's response
 │   │   └── {username}.json # User's response (generated when running analysis mode)
-│   ├── case2/            # Case 2 (same structure as above)
+│   ├── case9/            # Case 9 (same structure as above)
 │   └── ...                # Other cases
 ├── evaluation_config.py    # Evaluation configuration file
 ├── config.py              # Analysis mode configuration file
@@ -223,7 +249,7 @@ Generated automatically when users save their responses after running analysis m
 
    - Load user's response from analysis mode (`{username}.json`)
    - Load all evaluators' responses (LLM and doctor data)
-   - Doctor can drag-and-drop rank, score, and evaluate each evaluator's response
+   - Users can drag-and-drop rank, score, and evaluate each evaluator's response
    - Evaluation results are stored locally or in the backend database
 3. **Mixed Mode Flow**:
 
@@ -242,42 +268,3 @@ Generated automatically when users save their responses after running analysis m
 > **Note**: If you only add `case{X}.json` without evaluator data, users will only see their own response in evaluation mode without being able to compare with other evaluators.
 
 ---
-
-## Project Structure
-
-```
-Root/
-├── backend/               # Flask backend service
-│   ├── app/              # Flask application module
-│   ├── conversations/    # Medical case data
-│   ├── config.py         # Configuration management
-│   ├── run.py            # Analysis mode startup script
-│   ├── run_evaluation.py # Evaluation mode startup script
-│   └── requirements.txt   # Dependencies
-├── frontend/             # Vue.js frontend application
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── analysis/   # Analysis mode components
-│   │   │   └── evaluation/ # Evaluation mode components
-│   │   ├── router/        # Router configuration
-│   │   └── main.js        # Entry point
-│   ├── package.json       # Dependencies
-│   └── vue.config.js      # Vue configuration
-├── start_mixed.bat        # Mixed mode startup script
-├── start_analysis.bat     # Analysis mode startup script
-├── start_evaluation.bat   # Evaluation mode startup script
-└── README.md             # This file
-```
-
----
-
-=======
-This is the code for system used in CHI2026 paper: “Do I Trust the AI?” Towards Trustworthy AI-Assisted Diagnosis: Understanding User Perception in LLM-Supported Clinical Reasoning
-
->>>>>>> a8ef16a6b9531d90bd3f5cdb171c0aabb891c56c
->>>>>>>
->>>>>>
->>>>>
->>>>
->>>
->>

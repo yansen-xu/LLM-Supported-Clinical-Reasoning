@@ -1,23 +1,41 @@
 @echo off
+setlocal enabledelayedexpansion
 chcp 65001 >nul
 echo ========================================
-echo 启动 CHI26 评估模式
+echo Starting CHI26 Evaluation Mode
 echo ========================================
 echo.
 
-echo [1/2] 启动后端服务（端口 5001）...
+REM Check if conda is available
+where conda >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo Error: conda not found. Please install Anaconda or Miniconda first.
+    pause
+    exit /b 1
+)
+
+echo Available Conda environments:
+conda env list | findstr /v "^#"
+echo.
+set /p conda_env="Please enter Conda environment name (default: base): "
+if "!conda_env!"=="" set "conda_env=base"
+
+echo Using environment: !conda_env!
+echo.
+cd ..
+echo [1/2] Starting backend service (port 5001)...
 cd backend
-start "CHI26 Backend - Evaluation" cmd /k "python run_evaluation.py"
+start "CHI26 Backend - Evaluation" cmd /k "call conda activate !conda_env! && python run_evaluation.py"
 timeout /t 3 /nobreak
 
 cd ..\frontend
-echo [2/2] 启动前端评估模式（端口 8081）...
-start "CHI26 Frontend - Evaluation" cmd /k "npm run evaluation"
+echo [2/2] Starting frontend evaluation mode (port 8081)...
+start "CHI26 Frontend - Evaluation" cmd /k "call conda activate !conda_env! && npm run evaluation"
 
 echo.
 echo ========================================
-echo 评估模式启动完成！
-echo 前端地址: http://localhost:8081
-echo 后端地址: http://localhost:5001
+echo Evaluation mode started!
+echo Frontend: http://localhost:8081
+echo Backend: http://localhost:5001
 echo ========================================
 pause

@@ -9,23 +9,31 @@ class Config:
     DEBUG = False
     TESTING = False
 
-    # API configuration
-    OPENAI_API_KEY = os.environ.get(
-        'OPENAI_API_KEY')
-    OPENAI_BASE_URL = os.environ.get(
-        'OPENAI_BASE_URL')
-    OPENAI_MODEL = os.environ.get('OPENAI_MODEL')
-
-    # File path configuration
-    CONVERSATIONS_DIR = os.environ.get(
-        'CONVERSATIONS_DIR') or "./conversations"
-
     # Log configuration
     LOG_LEVEL = os.environ.get('LOG_LEVEL') or 'INFO'
     LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
     # Security configuration
     CORS_ORIGINS = os.environ.get('CORS_ORIGINS') or ['*']
+
+    # File path configuration
+    CONVERSATIONS_DIR = os.environ.get(
+        'CONVERSATIONS_DIR') or "./conversations"
+
+    @property
+    def OPENAI_API_KEY(self):
+        """Dynamically read from environment"""
+        return os.environ.get('OPENAI_API_KEY')
+
+    @property
+    def OPENAI_BASE_URL(self):
+        """Dynamically read from environment"""
+        return os.environ.get('OPENAI_BASE_URL')
+
+    @property
+    def OPENAI_MODEL(self):
+        """Dynamically read from environment"""
+        return os.environ.get('OPENAI_MODEL')
 
     @staticmethod
     def init_app(app):
@@ -69,4 +77,5 @@ config = {
 def get_config():
     """Get current environment configuration"""
     env = os.environ.get('FLASK_ENV', 'default')
-    return config.get(env, config['default'])
+    config_class = config.get(env, config['default'])
+    return config_class()  # Return an instance of the config class

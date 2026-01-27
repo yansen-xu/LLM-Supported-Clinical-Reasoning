@@ -1,6 +1,15 @@
+import logging
 from evaluation_config import get_evaluation_config
+import uuid
+import threading
+from datetime import datetime
+import json
+from flask_cors import CORS
+from flask import Flask, request, jsonify
 import sys
 import io
+import os
+from pathlib import Path
 
 # Configure stdout and stderr to use UTF-8 encoding for Chinese characters
 if sys.stdout.encoding != 'utf-8':
@@ -8,28 +17,77 @@ if sys.stdout.encoding != 'utf-8':
 if sys.stderr.encoding != 'utf-8':
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import os
-import json
-from datetime import datetime
-from pathlib import Path
-import threading
-import uuid
+# ⚠️ IMPORTANT: Load .env file BEFORE importing config
+# evaluation_config.py reads os.environ at module load time, so we must populate it first
+print(f"[Startup] Loading .env file...")
+possible_paths = [
+    Path(__file__).parent.parent / '.env',  # 从backend上一级目录
+    Path(__file__).parent / '.env',  # backend目录下
+    Path.cwd() / '.env',  # 当前工作目录
+]
 
-# Load .env file from project root
-env_path = Path(__file__).parent.parent / '.env'
-if env_path.exists():
-    with open(env_path, encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith('#'):
-                key, value = line.split('=', 1)
-                os.environ[key] = value
+env_loaded = False
+for env_path in possible_paths:
+    print(f"[Startup] Checking for .env at: {env_path}")
+    if env_path.exists():
+        print(f"[Startup] ✓ .env file found, loading...")
+        try:
+            with open(env_path, encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#'):
+                        if '=' in line:
+                            key, value = line.split('=', 1)
+                            key = key.strip()
+                            value = value.strip()
+                            if key:
+                                os.environ[key] = value
+                                print(f"[Startup]   → {key}")
+            env_loaded = True
+            break
+        except Exception as e:
+            print(f"[Startup] Error reading .env: {e}")
+            continue
 
+if not env_loaded:
+    print(f"[Startup] ✗ WARNING: .env file not found in any expected location!")
+
+# NOW import evaluation_config after .env is loaded
 
 # 获取配置
 config = get_evaluation_config()
+
+# 验证关键配置
+print(f"\n[Startup] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print(f"[Startup] Configuration Summary (Evaluation):")
+print(f"[Startup] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+openai_model = os.environ.get('OPENAI_MODEL')
+openai_base_url = os.environ.get('OPENAI_BASE_URL')
+openai_api_key = os.environ.get('OPENAI_API_KEY')
+print(f"[Startup]   OPENAI_MODEL: {openai_model or '❌ NOT SET'}")
+print(f"[Startup]   OPENAI_BASE_URL: {openai_base_url or '❌ NOT SET'}")
+print(
+    f"[Startup]   OPENAI_API_KEY: {'✓ SET' if openai_api_key else '❌ NOT SET'}")
+print(f"[Startup]   CONVERSATIONS_DIR: {config.CONVERSATIONS_DIR}")
+print(f"[Startup] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+
+# 验证必要的配置是否存在
+config_errors = []
+if not openai_model:
+    config_errors.append("OPENAI_MODEL is not set")
+if not openai_api_key:
+    config_errors.append("OPENAI_API_KEY is not set")
+if not openai_base_url:
+    config_errors.append("OPENAI_BASE_URL is not set")
+
+if config_errors:
+    print(f"[Startup] ❌ CONFIGURATION ERRORS:")
+    for error in config_errors:
+        print(f"[Startup]    - {error}")
+    print(f"[Startup] Please check your .env file at the project root directory.")
+
+# Disable verbose logging for polling requests
+logging.getLogger('werkzeug').setLevel(logging.ERROR)
 
 app = Flask(__name__)
 app.config.from_object(config)

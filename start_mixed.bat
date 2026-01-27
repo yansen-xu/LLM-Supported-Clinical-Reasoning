@@ -1,27 +1,45 @@
 @echo off
+setlocal enabledelayedexpansion
 chcp 65001 >nul
 echo ========================================
-echo 启动 CHI26 混合模式（分析 + 评估）
+echo Starting CHI26 Mixed Mode (Analysis + Evaluation)
 echo ========================================
 echo.
 
-echo [1/4] 启动后端服务（端口 5000 和 5001）...
+REM Check if conda is available
+where conda >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo Error: conda not found. Please install Anaconda or Miniconda first.
+    pause
+    exit /b 1
+)
+
+echo Available Conda environments:
+conda env list | findstr /v "^#"
+echo.
+set /p conda_env="Please enter Conda environment name (default: base): "
+if "!conda_env!"=="" set "conda_env=base"
+
+echo Using environment: !conda_env!
+echo.
+cd ..
+echo [1/4] Starting backend services (ports 5000 and 5001)...
 cd backend
-start "CHI26 Backend" cmd /k "python run_all.py"
+start "CHI26 Backend" cmd /k "call conda activate !conda_env! && python run_all.py"
 timeout /t 3 /nobreak
 
-echo [2/4] 等待后端服务就绪...
+echo [2/4] Waiting for backend services to be ready...
 timeout /t 5 /nobreak
 
 cd ..\frontend
-echo [3/4] 启动前端混合模式（端口 8080）...
-start "CHI26 Frontend" cmd /k "npm run mixed"
+echo [3/4] Starting frontend mixed mode (port 8080)...
+start "CHI26 Frontend" cmd /k "call conda activate !conda_env! && npm run mixed"
 
 echo.
 echo ========================================
-echo 混合模式启动完成！
-echo 前端地址: http://localhost:8080
-echo 分析模式后端: http://localhost:5000
-echo 评估模式后端: http://localhost:5001
+echo Mixed mode started!
+echo Frontend: http://localhost:8080
+echo Analysis backend: http://localhost:5000
+echo Evaluation backend: http://localhost:5001
 echo ========================================
 pause

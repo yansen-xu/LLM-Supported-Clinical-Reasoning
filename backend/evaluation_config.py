@@ -14,6 +14,21 @@ class EvaluationConfig:
     # 安全配置
     CORS_ORIGINS = os.environ.get('CORS_ORIGINS') or ['*']
 
+    @property
+    def OPENAI_API_KEY(self):
+        """Dynamically read from environment"""
+        return os.environ.get('OPENAI_API_KEY')
+
+    @property
+    def OPENAI_BASE_URL(self):
+        """Dynamically read from environment"""
+        return os.environ.get('OPENAI_BASE_URL')
+
+    @property
+    def OPENAI_MODEL(self):
+        """Dynamically read from environment"""
+        return os.environ.get('OPENAI_MODEL')
+
     @staticmethod
     def init_app(app):
         """初始化应用配置"""
@@ -54,4 +69,5 @@ evaluation_config = {
 def get_evaluation_config():
     """获取当前环境配置"""
     env = os.environ.get('FLASK_ENV', 'default')
-    return evaluation_config.get(env, evaluation_config['default'])
+    config_class = evaluation_config.get(env, evaluation_config['default'])
+    return config_class()  # Return an instance of the config class

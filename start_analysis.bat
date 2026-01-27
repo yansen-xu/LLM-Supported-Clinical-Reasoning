@@ -1,23 +1,41 @@
 @echo off
+setlocal enabledelayedexpansion
 chcp 65001 >nul
 echo ========================================
-echo 启动 CHI26 分析模式
+echo Starting CHI26 Analysis Mode
 echo ========================================
 echo.
 
-echo [1/2] 启动后端服务（端口 5000）...
+REM Check if conda is available
+where conda >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo Error: conda not found. Please install Anaconda or Miniconda first.
+    pause
+    exit /b 1
+)
+
+echo Available Conda environments:
+conda env list | findstr /v "^#"
+echo.
+set /p conda_env="Please enter Conda environment name (default: base): "
+if "!conda_env!"=="" set "conda_env=base"
+
+echo Using environment: !conda_env!
+echo.
+cd ..
+echo [1/2] Starting backend service (port 5000)...
 cd backend
-start "CHI26 Backend - Analysis" cmd /k "python run.py"
+start "CHI26 Backend - Analysis" cmd /k "call conda activate !conda_env! && python run.py"
 timeout /t 3 /nobreak
 
 cd ..\frontend
-echo [2/2] 启动前端分析模式（端口 8080）...
-start "CHI26 Frontend - Analysis" cmd /k "npm run analysis"
+echo [2/2] Starting frontend analysis mode (port 8080)...
+start "CHI26 Frontend - Analysis" cmd /k "call conda activate !conda_env! && npm run analysis"
 
 echo.
 echo ========================================
-echo 分析模式启动完成！
-echo 前端地址: http://localhost:8080
-echo 后端地址: http://localhost:5000
+echo Analysis mode started!
+echo Frontend: http://localhost:8080
+echo Backend: http://localhost:5000
 echo ========================================
 pause

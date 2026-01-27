@@ -1,6 +1,16 @@
+import logging
+import uuid
+import threading
+from datetime import datetime
+import openai
+import json
+from flask_cors import CORS
+from flask import Flask, request, jsonify, session
 from config import get_config
 import sys
 import io
+import os
+from pathlib import Path
 
 # Configure stdout and stderr to use UTF-8 encoding for Chinese characters
 if sys.stdout.encoding != 'utf-8':
@@ -8,29 +18,78 @@ if sys.stdout.encoding != 'utf-8':
 if sys.stderr.encoding != 'utf-8':
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
-from flask import Flask, request, jsonify, session
-from flask_cors import CORS
-import os
-import json
-import openai
-from datetime import datetime
-from pathlib import Path
-import threading
-import uuid
+# ⚠️ IMPORTANT: Load .env file BEFORE importing config
+# config.py reads os.environ at module load time, so we must populate it first
+print(f"[Startup] Loading .env file...")
+possible_paths = [
+    Path(__file__).parent.parent / '.env',  # 从backend上一级目录
+    Path(__file__).parent / '.env',  # backend目录下
+    Path.cwd() / '.env',  # 当前工作目录
+]
 
-# Load .env file from project root
-env_path = Path(__file__).parent.parent / '.env'
-if env_path.exists():
-    with open(env_path, encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith('#'):
-                key, value = line.split('=', 1)
-                os.environ[key] = value
+env_loaded = False
+for env_path in possible_paths:
+    print(f"[Startup] Checking for .env at: {env_path}")
+    if env_path.exists():
+        print(f"[Startup] ✓ .env file found, loading...")
+        try:
+            with open(env_path, encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#'):
+                        if '=' in line:
+                            key, value = line.split('=', 1)
+                            key = key.strip()
+                            value = value.strip()
+                            if key:
+                                os.environ[key] = value
+                                print(f"[Startup]   → {key}")
+            env_loaded = True
+            break
+        except Exception as e:
+            print(f"[Startup] Error reading .env: {e}")
+            continue
+
+if not env_loaded:
+    print(f"[Startup] ✗ WARNING: .env file not found in any expected location!")
+
+# NOW import config after .env is loaded
 
 
 # 获取配置
 config = get_config()
+
+# 验证关键配置
+print(f"\n[Startup] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+print(f"[Startup] Configuration Summary:")
+print(f"[Startup] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+openai_model = os.environ.get('OPENAI_MODEL')
+openai_base_url = os.environ.get('OPENAI_BASE_URL')
+openai_api_key = os.environ.get('OPENAI_API_KEY')
+print(f"[Startup]   OPENAI_MODEL: {openai_model or '❌ NOT SET'}")
+print(f"[Startup]   OPENAI_BASE_URL: {openai_base_url or '❌ NOT SET'}")
+print(
+    f"[Startup]   OPENAI_API_KEY: {'✓ SET' if openai_api_key else '❌ NOT SET'}")
+print(f"[Startup]   CONVERSATIONS_DIR: {config.CONVERSATIONS_DIR}")
+print(f"[Startup] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
+
+# 验证必要的配置是否存在
+config_errors = []
+if not openai_model:
+    config_errors.append("OPENAI_MODEL is not set")
+if not openai_api_key:
+    config_errors.append("OPENAI_API_KEY is not set")
+if not openai_base_url:
+    config_errors.append("OPENAI_BASE_URL is not set")
+
+if config_errors:
+    print(f"[Startup] ❌ CONFIGURATION ERRORS:")
+    for error in config_errors:
+        print(f"[Startup]    - {error}")
+    print(f"[Startup] Please check your .env file at the project root directory.")
+
+# Disable verbose logging for polling requests
+logging.getLogger('werkzeug').setLevel(logging.ERROR)
 
 app = Flask(__name__)
 app.config.from_object(config)
@@ -123,15 +182,26 @@ def load_medical_case(username, case_index):
 
 
 def get_response(messages):
-    """获取阿里云百炼AI的响应"""
+    """Get AI response from LLM"""
     try:
-        # 使用更简单的初始化方式，避免proxies参数问题
+        # Verify configuration
+        if not config.OPENAI_MODEL:
+            raise ValueError(
+                "OPENAI_MODEL is not configured. Please check your .env file.")
+        if not config.OPENAI_API_KEY:
+            raise ValueError(
+                "OPENAI_API_KEY is not configured. Please check your .env file.")
+        if not config.OPENAI_BASE_URL:
+            raise ValueError(
+                "OPENAI_BASE_URL is not configured. Please check your .env file.")
 
-        # 设置API配置
+        # Set API configuration
         openai.api_key = config.OPENAI_API_KEY
         openai.api_base = config.OPENAI_BASE_URL
 
-        # 创建聊天完成请求
+        print(f"[AI] Calling OpenAI API with model: {config.OPENAI_MODEL}")
+
+        # Create chat completion request
         response = openai.ChatCompletion.create(
             model=config.OPENAI_MODEL,
             messages=messages,
@@ -140,14 +210,21 @@ def get_response(messages):
         )
 
         return response.choices[0].message.content
+    except ValueError as ve:
+        print(f"[AI] Configuration Error: {str(ve)}")
+        return f"Configuration Error: {str(ve)}"
     except Exception as e:
-        print(f"AI响应错误: {str(e)}")
-        # 返回更友好的错误信息
-        return "抱歉，AI服务暂时不可用，请稍后再试。"
+        import traceback
+        error_msg = str(e)
+        tb = traceback.format_exc()
+        print(f"[AI] Error calling LLM API:")
+        print(f"[AI]   Error: {error_msg}")
+        print(f"[AI]   Traceback:\n{tb}")
+        return "AI service is currently unavailable. Please try again later."
 
 
 def initialize_case(username):
-    """初始化当前病例的系统消息"""
+    """Initialize system messages for current case"""
     user_state = get_user_state(username)
 
     if user_state['case_data'] is None:
@@ -162,7 +239,8 @@ def initialize_case(username):
     user_state['message_history'].extend([
         {"role": "system", "content": user_state['case_data']["prompt1"]},
         {"role": "system", "content": user_state['case_data']["prompt2"]},
-        {"role": "system", "content": exam_content}
+        {"role": "system", "content": exam_content},
+        {"role": "system", "content": "IMPORTANT: You MUST respond ONLY in English. Never use Chinese or any other language. All responses must be in English only."}
     ])
 
     user_state['initialized'] = True
@@ -211,20 +289,14 @@ def get_next_case_index(username):
             user_file_path = os.path.join(case_dir, expected_filename)
             if os.path.exists(user_file_path):
                 completed_case_indices.add(idx)
-                print(
-                    f"用户 {username} 已完成案例索引: {idx} ({case_folder}), 文件: {expected_filename}")
-
-    print(f"用户 {username} 已完成的案例索引: {completed_case_indices}")
 
     # 从索引0开始，找到第一个未完成的案例
     for idx in range(total_cases):
         if idx not in completed_case_indices:
-            print(f"用户 {username} 的下一个未完成案例索引: {idx}")
             return idx
 
     # 如果所有案例都完成了，返回最后一个案例索引
     last_idx = total_cases - 1
-    print(f"用户 {username} 的所有案例都已完成，返回最后一个案例索引: {last_idx}")
     return last_idx
 
 
@@ -245,10 +317,8 @@ def get_previous_case_index(username):
     # 如果当前索引大于0，则返回前一个案例索引
     if current_index > 0:
         previous_index = current_index - 1
-        print(f"用户 {username} 从案例 {current_index} 返回到上一个案例 {previous_index}")
         return previous_index
     else:
-        print(f"用户 {username} 已在第一个案例，无法返回前一个")
         return None
 
 
@@ -317,16 +387,10 @@ def handle_next_step():
 
         user_state = get_user_state(username)
 
-        # 注意：不再在这里保存消息历史，因为前端已经通过 save-conversation 保存了完整数据
-        print(f"用户 {username} 当前消息历史长度: {len(user_state['message_history'])}")
-
         # 获取下一个未完成的案例索引
         next_case_index = get_next_case_index(username)
         case_files = get_user_case_files(username)
         total_cases = len(case_files)
-
-        print(
-            f"用户 {username} 从索引 {user_state['current_case_index']} 跳转到 {next_case_index} (总病例数: {total_cases})")
 
         # 先清空当前的消息历史，然后更新案例索引
         user_state['message_history'] = []
@@ -334,21 +398,17 @@ def handle_next_step():
         user_state['case_data'] = load_medical_case(username, next_case_index)
         initialize_case(username)
 
-        print(f"用户 {username} 已跳转到病例 {next_case_index + 1}")
-        print(f"用户 {username} 当前状态中的病例索引: {user_state['current_case_index']}")
-
         return jsonify({
             'status': 'success',
             'action': next_action,
-            'message': '下一步处理成功',
+            'message': 'Next step processed successfully',
         })
 
     except Exception as e:
         import traceback
-        print(f"处理下一步请求出错: {str(e)}\n{traceback.format_exc()}")
         return jsonify({
             'status': 'error',
-            'message': '处理下一步请求失败'
+            'message': 'Failed to process next step'
         }), 500
 
 
@@ -387,8 +447,6 @@ def handle_previous_step():
             username, previous_case_index)
         initialize_case(username)
 
-        print(f"用户 {username} 已跳转到病例 {previous_case_index + 1}")
-
         return jsonify({
             'status': 'success',
             'message': 'Previous step processed successfully'
@@ -396,7 +454,6 @@ def handle_previous_step():
 
     except Exception as e:
         import traceback
-        print(f"处理上一步请求出错: {str(e)}\n{traceback.format_exc()}")
         return jsonify({
             'status': 'error',
             'message': 'Failed to process previous step'
@@ -526,13 +583,12 @@ def get_main_suit():
     try:
         # 如果case_data还没有加载，尝试加载
         if user_state['case_data'] is None:
-            print(f"用户 {username} 的case_data为空，尝试加载案例数据")
             user_state['case_data'] = load_medical_case(
                 username, user_state['current_case_index'])
             if user_state['case_data'] is None:
                 return jsonify({
                     'status': 'error',
-                    'message': f'无法加载用户 {username} 的案例数据'
+                    'message': f'Failed to load case data for user {username}'
                 }), 404
 
         # 检查是否有main_suit字段
@@ -797,7 +853,6 @@ def save_conversation():
 
         # 保存成功后，不清空消息历史，让next-step函数来处理
         # 这样可以确保保存和跳转的顺序正确
-        print(f"用户 {username} 的案例 {save_case_index + 1} 对话已保存到 {file_name}")
 
         return jsonify({
             'status': 'success',
@@ -867,19 +922,16 @@ def classify_message():
             print(f"LLM分类失败: {str(llm_error)}，使用默认分类: 'other'")
             category = 'other'
 
-        print(f"用户 {username} 的消息分类结果: {category}")
-
         return jsonify({
             'status': 'success',
             'category': category,
-            'message': f'消息已分类为: {category}'
+            'message': f'Message classified as: {category}'
         })
 
     except Exception as e:
-        print(f"分类API错误: {str(e)}")
         return jsonify({
             'status': 'error',
-            'message': f'分类失败: {str(e)}'
+            'message': f'Classification failed: {str(e)}'
         }), 500
 
 
