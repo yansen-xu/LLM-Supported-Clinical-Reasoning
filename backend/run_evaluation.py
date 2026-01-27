@@ -1,3 +1,13 @@
+from evaluation_config import get_evaluation_config
+import sys
+import io
+
+# Configure stdout and stderr to use UTF-8 encoding for Chinese characters
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+if sys.stderr.encoding != 'utf-8':
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
@@ -10,14 +20,13 @@ import uuid
 # Load .env file from project root
 env_path = Path(__file__).parent.parent / '.env'
 if env_path.exists():
-    with open(env_path) as f:
+    with open(env_path, encoding='utf-8') as f:
         for line in f:
             line = line.strip()
             if line and not line.startswith('#'):
                 key, value = line.split('=', 1)
                 os.environ[key] = value
 
-from evaluation_config import get_evaluation_config
 
 # 获取配置
 config = get_evaluation_config()
@@ -205,7 +214,10 @@ def init_evaluation_user():
         username = data.get('username', '')
         user_id = data.get('user_id', str(uuid.uuid4()))
 
+        print(f"[init-user] 收到初始化请求，用户: {username}, user_id: {user_id}")
+
         if not username:
+            print(f"[init-user] 错误：用户名为空")
             return jsonify({'status': 'error', 'message': '用户名不能为空'}), 400
 
         user_state = get_user_state(username)
@@ -220,7 +232,8 @@ def init_evaluation_user():
             next_case_index, username)
         initialize_case(username)
 
-        print(f"用户 {username} 初始化完成 - case_index: {next_case_index}")
+        print(
+            f"[init-user] 用户 {username} 初始化完成 - case_index: {next_case_index}")
 
         return jsonify({
             'status': 'success',
@@ -237,6 +250,9 @@ def init_evaluation_user():
             }
         })
     except Exception as e:
+        print(f"[init-user] 初始化失败: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
@@ -313,7 +329,8 @@ def navigate_case():
             print(
                 f"导航后 - prompt2 长度: {len(user_state['case_data'].get('prompt2', ''))}")
 
-        case_name = case_files[new_index] if new_index < len(case_files) else 'N/A'
+        case_name = case_files[new_index] if new_index < len(
+            case_files) else 'N/A'
 
         return jsonify({
             'status': 'success',
@@ -349,7 +366,8 @@ def get_current_evaluation_case():
 
     try:
         current_index = user_state['current_case_index']
-        case_filename = case_files[current_index] if current_index < len(case_files) else "未找到案例"
+        case_filename = case_files[current_index] if current_index < len(
+            case_files) else "未找到案例"
         total_cases = len(case_files)
 
         # 创建过滤后的病例数据副本
@@ -635,9 +653,6 @@ def evaluation_health_check():
         'cases_dir': cases_dir,
         'conversations_dir': config.CONVERSATIONS_DIR
     })
-
-
-
 
 
 @app.route('/api/evaluation/case/<int:case_id>/evaluator/<evaluator_id>', methods=['GET'])
@@ -1254,17 +1269,21 @@ def get_case_evaluators(case_id):
         # 找到对应的case文件夹
         case_folder_name = f'case{case_id}'
         case_folder_path = os.path.join(cases_dir, case_folder_name)
-        
-        print(f"正在查找评估者文件，Case: {case_id}, 路径: {case_folder_path}")
-        
+
+        print(
+            f"[get_case_evaluators] 正在查找评估者文件，Case: {case_id}, 路径: {case_folder_path}")
+
         if not os.path.exists(case_folder_path):
-            print(f"Case文件夹不存在: {case_folder_path}")
+            print(f"[get_case_evaluators] Case文件夹不存在: {case_folder_path}")
             return jsonify({'status': 'error', 'message': f'Case {case_id} 不存在'}), 404
-        
+
         # 获取所有evaluator JSON文件
         evaluators = []
         try:
-            for file in os.listdir(case_folder_path):
+            files_in_dir = os.listdir(case_folder_path)
+            print(f"[get_case_evaluators] 目录中的文件: {files_in_dir}")
+
+            for file in files_in_dir:
                 if file.endswith('.json') and file != f'case{case_id}.json':
                     # 这是一个evaluator文件
                     file_path = os.path.join(case_folder_path, file)
@@ -1278,26 +1297,29 @@ def get_case_evaluators(case_id):
                                 'file': file,
                                 'data': evaluator_data
                             })
-                            print(f"加载评估者: {evaluator_name}")
+                            print(
+                                f"[get_case_evaluators] 加载评估者: {evaluator_name}")
                     except Exception as e:
-                        print(f"加载评估者文件失败: {file}, 错误: {e}")
+                        print(
+                            f"[get_case_evaluators] 加载评估者文件失败: {file}, 错误: {e}")
                         continue
         except Exception as e:
-            print(f"列举目录失败: {case_folder_path}, 错误: {e}")
-        
-        print(f"成功获取Case {case_id}的评估者数量: {len(evaluators)}")
-        
+            print(f"[get_case_evaluators] 列举目录失败: {case_folder_path}, 错误: {e}")
+
+        print(
+            f"[get_case_evaluators] 成功获取Case {case_id}的评估者数量: {len(evaluators)}")
+
         return jsonify({
             'status': 'success',
             'case_id': case_id,
             'evaluators': evaluators,
             'total': len(evaluators)
         })
-        
+
     except Exception as e:
         import traceback
-        print(f"获取评估者列表时出错: {str(e)}")
-        print(f"错误详情: {traceback.format_exc()}")
+        print(f"[get_case_evaluators] 获取评估者列表时出错: {str(e)}")
+        print(f"[get_case_evaluators] 错误详情: {traceback.format_exc()}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 

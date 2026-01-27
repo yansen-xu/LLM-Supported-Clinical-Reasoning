@@ -57,6 +57,7 @@ npm install
 #### Using `.env` file in project root (Recommended)
 
 **Example `.env` file (`root/.env`):**
+
 ```bash
 # OpenAI API Configuration
 OPENAI_API_KEY=sk-your_api_key_here
@@ -89,6 +90,7 @@ Use the following `.bat` scripts in the project root directory, run the correspo
 ### Method 2: Manual Startup (Cross-platform)
 
 #### Mixed Mode
+
 ```bash
 # Terminal 1: Start backend
 cd backend
@@ -100,6 +102,7 @@ npm run mixed
 ```
 
 #### Analysis Mode Only
+
 ```bash
 # Terminal 1: Start backend
 cd backend
@@ -111,6 +114,7 @@ npm run analysis
 ```
 
 #### Evaluation Mode Only
+
 ```bash
 # Terminal 1: Start backend
 cd backend
@@ -153,7 +157,7 @@ backend/
 
 ### Case File Format
 
-#### Original Case File (case{X}.json)
+#### Original Case File (case.json)
 
 ```json
 {
@@ -175,9 +179,10 @@ backend/
 }
 ```
 
-#### Evaluator Response File ({Evaluator}.json)
+#### Evaluator Response File (.json)
 
 **Evaluators include:**
+
 - `Expert.json` - Senior clinician (10+ years of experience)
 - `Middle.json` - Mid-level clinician (5-10 years of experience)
 - `Young.json` - Junior clinician (0-5 years of experience)
@@ -202,25 +207,26 @@ backend/
 }
 ```
 
-#### User Response File ({username}.json)
+#### User Response File (.json)
 
 Generated automatically when users save their responses after running analysis mode. Format is the same as evaluator response files above.
 
 ### Data Flow
 
 1. **Analysis Mode Flow**:
+
    - Load `conversations/case{X}/case{X}.json` as initial patient data
    - Doctor interacts with AI patient through conversation (LLM-driven)
    - Doctor inputs diagnosis and treatment plan
    - System saves response as `conversations/case{X}/{username}.json`
-
 2. **Evaluation Mode Flow**:
+
    - Load user's response from analysis mode (`{username}.json`)
    - Load all evaluators' responses (LLM and doctor data)
    - Doctor can drag-and-drop rank, score, and evaluate each evaluator's response
    - Evaluation results are stored locally or in the backend database
-
 3. **Mixed Mode Flow**:
+
    - Run analysis and evaluation services simultaneously
    - User completes their response in analysis mode
    - Automatically switches to evaluation mode to assess their response
@@ -264,3 +270,14 @@ Root/
 ```
 
 ---
+
+=======
+This is the code for system used in CHI2026 paper: “Do I Trust the AI?” Towards Trustworthy AI-Assisted Diagnosis: Understanding User Perception in LLM-Supported Clinical Reasoning
+
+>>>>>>> a8ef16a6b9531d90bd3f5cdb171c0aabb891c56c
+>>>>>>>
+>>>>>>
+>>>>>
+>>>>
+>>>
+>>

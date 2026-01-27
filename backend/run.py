@@ -1,3 +1,13 @@
+from config import get_config
+import sys
+import io
+
+# Configure stdout and stderr to use UTF-8 encoding for Chinese characters
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+if sys.stderr.encoding != 'utf-8':
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 import os
@@ -11,14 +21,13 @@ import uuid
 # Load .env file from project root
 env_path = Path(__file__).parent.parent / '.env'
 if env_path.exists():
-    with open(env_path) as f:
+    with open(env_path, encoding='utf-8') as f:
         for line in f:
             line = line.strip()
             if line and not line.startswith('#'):
                 key, value = line.split('=', 1)
                 os.environ[key] = value
 
-from config import get_config
 
 # 获取配置
 config = get_config()
@@ -59,22 +68,22 @@ def get_user_case_files(username):
     if username not in user_case_files:
         # 从conversations文件夹下获取所有case文件夹
         conversations_dir = config.CONVERSATIONS_DIR
-        
+
         # 获取conversations文件夹下的所有第一层目录（case文件夹）
         if os.path.exists(conversations_dir):
             all_items = os.listdir(conversations_dir)
             # 过滤出是目录且名称为caseX的文件夹
-            case_folders = [item for item in all_items 
-                           if os.path.isdir(os.path.join(conversations_dir, item)) 
-                           and item.startswith('case')]
-            
+            case_folders = [item for item in all_items
+                            if os.path.isdir(os.path.join(conversations_dir, item))
+                            and item.startswith('case')]
+
             # 按数字顺序排序 (case10, case11, etc.)
             case_folders = sorted(case_folders, key=lambda x: int(
                 x.replace('case', '')))
-            
+
             # 构建对应的json文件名列表 (case10.json, case11.json, etc.)
             case_files = [f"{folder}/{folder}.json" for folder in case_folders]
-            
+
             user_case_files[username] = case_files
             print(f"从conversations文件夹获取的案例文件: {user_case_files[username]}")
         else:
@@ -96,13 +105,13 @@ def load_medical_case(username, case_index):
     # 从conversations文件夹下加载case文件
     conversations_dir = config.CONVERSATIONS_DIR
     case_file_path = os.path.join(conversations_dir, case_files[case_index])
-    
+
     print(f"尝试加载病例文件: {case_file_path}")
-    
+
     if not os.path.exists(case_file_path):
         print(f"错误：病例文件不存在: {case_file_path}")
         return None
-    
+
     try:
         with open(case_file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -164,14 +173,14 @@ def get_user_dir(username):
     base_dir = config.CONVERSATIONS_DIR
     if not os.path.exists(base_dir):
         os.makedirs(base_dir)
-    
+
     # 直接返回conversations目录，不再为用户创建子目录
     return base_dir
 
 
 def get_next_case_index(username):
     """获取用户下一个未完成case的索引
-    
+
     逻辑：
     1. 遍历所有案例文件夹，检查用户是否有保存的对话记录（文件名为{username}.json）
     2. 返回第一个没有作答过的案例索引（从0开始）
@@ -180,43 +189,43 @@ def get_next_case_index(username):
     # 获取案例文件列表
     case_files = get_user_case_files(username)
     total_cases = len(case_files)
-    
+
     if total_cases == 0:
         print(f"未找到任何案例文件")
         return 0
-    
+
     # 统计每个case文件夹中是否有该用户的JSON文件
     conversations_dir = config.CONVERSATIONS_DIR
     completed_case_indices = set()
-    
+
     # 期望的用户保存文件名
     expected_filename = f"{username}.json"
-    
+
     for idx, case_file_path in enumerate(case_files):
         # case_files 中的文件名格式为 "case10/case10.json"
         case_folder = case_file_path.split('/')[0]
         case_dir = os.path.join(conversations_dir, case_folder)
-        
+
         if os.path.exists(case_dir):
             # 精确查找该用户的json文件 (filename == "{username}.json")
             user_file_path = os.path.join(case_dir, expected_filename)
             if os.path.exists(user_file_path):
                 completed_case_indices.add(idx)
-                print(f"用户 {username} 已完成案例索引: {idx} ({case_folder}), 文件: {expected_filename}")
-    
+                print(
+                    f"用户 {username} 已完成案例索引: {idx} ({case_folder}), 文件: {expected_filename}")
+
     print(f"用户 {username} 已完成的案例索引: {completed_case_indices}")
-    
+
     # 从索引0开始，找到第一个未完成的案例
     for idx in range(total_cases):
         if idx not in completed_case_indices:
             print(f"用户 {username} 的下一个未完成案例索引: {idx}")
             return idx
-    
+
     # 如果所有案例都完成了，返回最后一个案例索引
     last_idx = total_cases - 1
     print(f"用户 {username} 的所有案例都已完成，返回最后一个案例索引: {last_idx}")
     return last_idx
-
 
 
 def get_previous_case_index(username):
@@ -224,35 +233,36 @@ def get_previous_case_index(username):
     # 获取案例文件列表
     case_files = get_user_case_files(username)
     total_cases = len(case_files)
-    
+
     if total_cases == 0:
         print(f"未找到任何案例文件")
         return None
-    
+
     # 获取当前案例索引
     user_state = get_user_state(username)
     current_index = user_state['current_case_index']
-    
+
     # 统计每个case文件夹中是否有已完成的JSON文件
     conversations_dir = config.CONVERSATIONS_DIR
-    
+
     # 期望的用户保存文件名
     expected_filename = f"{username}.json"
-    
+
     # 从当前索引向前查找已完成的案例
     for idx in range(current_index - 1, -1, -1):
         if idx < len(case_files):
             case_file_path = case_files[idx]
             case_folder = case_file_path.split('/')[0]
             case_dir = os.path.join(conversations_dir, case_folder)
-            
+
             if os.path.exists(case_dir):
                 # 精确查找该用户的json文件 (filename == "{username}.json")
                 user_file_path = os.path.join(case_dir, expected_filename)
                 if os.path.exists(user_file_path):
-                    print(f"用户 {username} 的上一个已完成案例索引: {idx} ({case_folder}), 文件: {expected_filename}")
+                    print(
+                        f"用户 {username} 的上一个已完成案例索引: {idx} ({case_folder}), 文件: {expected_filename}")
                     return idx
-    
+
     print(f"用户 {username} 没有已完成的上一个案例")
     return None
 
@@ -329,7 +339,7 @@ def handle_next_step():
         next_case_index = get_next_case_index(username)
         case_files = get_user_case_files(username)
         total_cases = len(case_files)
-        
+
         print(
             f"用户 {username} 从索引 {user_state['current_case_index']} 跳转到 {next_case_index} (总病例数: {total_cases})")
 
@@ -375,19 +385,21 @@ def handle_previous_step():
 
         # 获取上一个已完成的案例索引
         previous_case_index = get_previous_case_index(username)
-        
+
         if previous_case_index is None:
             return jsonify({
                 'status': 'error',
                 'message': '没有上一个已完成的案例'
             }), 400
-        
-        print(f"用户 {username} 从索引 {user_state['current_case_index']} 跳转到 {previous_case_index}")
+
+        print(
+            f"用户 {username} 从索引 {user_state['current_case_index']} 跳转到 {previous_case_index}")
 
         # 清空当前的消息历史，然后更新案例索引
         user_state['message_history'] = []
         user_state['current_case_index'] = previous_case_index
-        user_state['case_data'] = load_medical_case(username, previous_case_index)
+        user_state['case_data'] = load_medical_case(
+            username, previous_case_index)
         initialize_case(username)
 
         print(f"用户 {username} 已跳转到病例 {previous_case_index + 1}")
@@ -426,7 +438,7 @@ def save_message_history(username):
     # 获取案例文件列表和当前案例索引
     case_files = get_user_case_files(username)
     save_case_index = user_state['current_case_index']
-    
+
     if save_case_index < len(case_files):
         # case_files 中的文件名格式为 "case10/case10.json"
         case_file_path = case_files[save_case_index]
@@ -434,15 +446,15 @@ def save_message_history(username):
         case_folder = case_file_path.split('/')[0]
     else:
         case_folder = f"case{save_case_index + 1}"
-    
+
     # 构建保存路径：直接保存到 conversations/{caseFolder}/ 中
     conversations_dir = config.CONVERSATIONS_DIR
     case_dir = os.path.join(conversations_dir, case_folder)
-    
+
     # 确保目录存在
     if not os.path.exists(case_dir):
         os.makedirs(case_dir, exist_ok=True)
-    
+
     file_path = os.path.join(case_dir, file_name)
 
     try:
@@ -611,13 +623,13 @@ def get_saved_conversation():
     try:
         username = request.args.get('username', '')
         case_index = int(request.args.get('case_index', '-1'))
-        
+
         if not username or case_index < 0:
             return jsonify({
                 'status': 'error',
                 'message': '缺少用户名或案例索引'
             }), 400
-        
+
         # 获取案例文件列表
         case_files = get_user_case_files(username)
         if case_index >= len(case_files):
@@ -625,35 +637,35 @@ def get_saved_conversation():
                 'status': 'error',
                 'message': '案例索引超出范围'
             }), 400
-        
+
         # 获取案例文件夹
         case_file_path = case_files[case_index]
         case_folder = case_file_path.split('/')[0]
-        
+
         # 构建case文件夹路径
         conversations_dir = config.CONVERSATIONS_DIR
         case_dir = os.path.join(conversations_dir, case_folder)
-        
+
         if not os.path.exists(case_dir):
             return jsonify({
                 'status': 'error',
                 'message': '案例文件夹不存在'
             }), 404
-        
+
         # 查找该用户在该case下的保存文件
         # 使用精确的文件名匹配 (filename == "{username}.json")
         expected_filename = f"{username}.json"
         user_file_path = os.path.join(case_dir, expected_filename)
-        
+
         if not os.path.exists(user_file_path):
             return jsonify({
                 'status': 'error',
                 'message': '该案例还没有保存过对话'
             }), 404
-        
+
         with open(user_file_path, 'r', encoding='utf-8') as f:
             saved_data = json.load(f)
-        
+
         return jsonify({
             'status': 'success',
             'conversation': saved_data.get('conversation', []),
@@ -661,7 +673,7 @@ def get_saved_conversation():
             'Treatment': saved_data.get('Treatment', ''),
             'file': expected_filename
         })
-    
+
     except Exception as e:
         print(f"获取已保存对话失败: {str(e)}")
         return jsonify({
@@ -749,11 +761,11 @@ def save_conversation():
         # 构建保存路径：直接保存到 conversations/{caseFolder}/ 中
         conversations_dir = config.CONVERSATIONS_DIR
         case_dir = os.path.join(conversations_dir, case_folder)
-        
+
         # 确保目录存在
         if not os.path.exists(case_dir):
             os.makedirs(case_dir, exist_ok=True)
-        
+
         # 使用用户名作为文件名，不使用时间戳，这样会覆盖之前的文件
         file_name = f"{username}.json"
         file_path = os.path.join(case_dir, file_name)
