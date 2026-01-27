@@ -1,18 +1,26 @@
 # LLM-Supported Clinical Reasoning
 
-## Feature Overview
+## Overview
 
 This medical diagnostic assessment and testing platform is developed for our CHI 26 paper *"Do I Trust the AI?" Towards Trustworthy AI-Assisted Diagnosis: Understanding User Perception in LLM-Supported Clinical Reasoning*, and it incorporates the following core features:
 
 1. **Analysis Mode**: Doctors can view patient information and diagnose through conversations with an AI-simulated patient
 2. **Evaluation Mode**: Compare doctor responses with pre-collected evaluators (LLMs and doctors with different experience levels), perform ranking, scoring, and assessment
-3. **Mixed Mode**: Run both analysis and evaluation modes simultaneously, supporting seamless switching between the two modes
+3. **Mixed Mode**: Run both analysis and evaluation modes simultaneously, supporting flexible switching between the two modes
 
-Please note that in our open-source version, we only provide the original case files and corresponding response records for **Case 8** and **Case 9** presented in the article.
+Please note that in our open-source version, we provide only the original case files and corresponding response records for **Case 8** and **Case 9** presented in the article, along with response records from different LLMs and physicians with varying levels of clinical experience.
 
-## Core Features
+### Analysis Mode
 
-- **Multi-Evaluator Comparison**：Curated clinical cases are assessed by multiple LLMs (Deepseek-V3, GPT-4, Gemini, etc.) and clinicians across different experience levels, with all participants prompted via the unified instruction "xxx".
+![1769502560760](image/README/1769502560760.png)
+
+### Evaluation Mode
+
+![1769503128360](image/README/1769503128360.png)
+
+## Features
+
+- **Multi-Analysts Comparison**：Curated clinical cases are analyzed by multiple LLMs (Deepseek-V3, GPT-4, Gemini, etc.) and clinicians across different experience levels.
 - **Customizable Evaluation**：Supports drag-and-drop ranking and pre-defined dimensional scoring for clinicians’ diagnostic conclusions and treatment plans.
 - **Flexible Extension**：Allows users to add new medical cases to enable scalable assessment.
 
@@ -35,7 +43,7 @@ cd backend
 # Create conda virtual environment named "diagnosis_testing" (Python版本可根据项目需求调整，例如python=3.9/3.10)
 conda create -n diagnosis_testing python=3.9 -y
 
-# Activate the conda environment (跨Windows/MacOS/Linux通用，Windows终端需使用Anaconda Prompt或配置conda环境变量)
+# Activate the conda environment (跨Windows/MacOS/Linux通用, Windows终端需使用Anaconda Prompt或配置conda环境变量)
 conda activate diagnosis_testing
 
 # Install dependencies from requirements.txt
@@ -128,31 +136,6 @@ npm run evaluation
 ```
 
 ---
-
-## Function Introduction
-
-In the open-source version of this system, we provide the full content of **Case 8** and **Case 9** from our paper, along with the response records of different large language models (LLMs) and physicians with varying levels of clinical experience.
-
-### Login Page
-
-### Analysis Mode
-
-![1769502560760](image/README/1769502560760.png)
-
-On the left side of the system is a dialogue interface that allows users to inquiry with a virtual patient powered by a large language model (LLM). The LLM’s responses are automatically organized into predefined categories, including symptoms, signs, physical examination findings, and diagnostic or laboratory test results.
-
-On the right panel, users are required to formulate and enter their diagnostic conclusions and treatment plans based on the information obtained from the patient interview.
-
-In the open-source version of our system, clicking **Next** automatically saves the current input, while the **Previous** button allows users to return to and review their earlier responses. The **Reset** button clears all prior dialogue records, enabling users to restart the task from the beginning.
-
-### Evaluation Mode
-
-![1769503128360](image/README/1769503128360.png)
-
-The interface consists of: (A) a ranking panel for ordering analyses; (B) a case information panel; (C) the original case description; (D) a conversation panel displaying the interaction history with the virtual patient; (E) a results panel showing submitted diagnoses and treatment plans alongside reference answers; and (F) a scoring panel for evaluating the analysis based on predefined criteria.
-
-When running the open-source version with  **start_mixed.bat** , the system supports flexible switching between **Evaluation Mode** and  **Analysis Mode** .
-
 ## Systemta Flow and File Structure
 
 ### Core Data Directory Structure
