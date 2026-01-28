@@ -1,6 +1,6 @@
 ## Overview
 
-This medical diagnostic assessment and testing platform is developed for our CHI 26 paper *"Do I Trust the AI?" Towards Trustworthy AI-Assisted Diagnosis: Understanding User Perception in LLM-Supported Clinical Reasoning*, with the following modes:
+This medical diagnostic assessment and testing platform is developed for our CHI 26 paper [*"Do I Trust the AI?" Towards Trustworthy AI-Assisted Diagnosis: Understanding User Perception in LLM-Supported Clinical Reasoning*](https://arxiv.org/abs/2601.19540), with the following modes:
 
 1. **Analysis Mode**: Doctors can view patient information and diagnose through conversations with an AI-simulated patient.
 2. **Evaluation Mode**: Examine responses of pre-collected analysts (LLMs and doctors with different experience levels), perform ranking and scoring. Different from the paper, we have real-named the respondents for examination convenience.
