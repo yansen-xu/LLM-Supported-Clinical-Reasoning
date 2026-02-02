@@ -1,0 +1,74 @@
+[
+    {
+        "dimension": "Whether the questioning is clear and coherent, logically consistent?",
+        "anchors": {
+            "1": "Completely illogical, random questioning",
+            "3": "Basically fluent, occasional deviations",
+            "5": "Progresses step by step, consistent with clinical communication habits"
+        },
+        "category": "Logic of consultation process"
+    },
+    {
+        "dimension": "Whether the final diagnosis is correct?",
+        "anchors": {
+            "1": "Serious misdiagnosis that could cause severe adverse outcomes",
+            "3": "Diagnosis not accurate, but direction consistent with the answer",
+            "5": "Diagnosis completely correct"
+        },
+        "category": "Accuracy of diagnostic conclusion"
+    },
+    {
+        "dimension": "Whether secondary diagnoses are comprehensive?",
+        "anchors": {
+            "1": "Secondary diagnoses incorrect or important ones missed",
+            "3": "Covers most secondary diagnoses but some still missed",
+            "5": "Diagnosis comprehensive"
+        },
+        "category": "Comprehensiveness of diagnostic conclusion"
+    },
+    {
+        "dimension": "Whether the diagnostic reasoning process is reasonable?",
+        "anchors": {
+            "1": "Off-topic, reasoning unrelated to the diagnosis",
+            "3": "Reasoning basically reasonable but chain incomplete",
+            "5": "Reasoning sufficient, evidence chain complete and self-consistent"
+        },
+        "category": "Reasonableness of reasoning process"
+    },
+    {
+        "dimension": "Whether the treatment recommendations are appropriate?",
+        "anchors": {
+            "1": "Treatment plan clearly inappropriate, may harm the patient",
+            "3": "Treatment plan basically reasonable but not detailed enough, overly broad or not in line with best practice",
+            "5": "Treatment plan fully reasonable, aligns with guidelines and best practice"
+        },
+        "category": "Appropriateness of treatment principles"
+    },
+    {
+        "dimension": "Whether the treatment is comprehensive?",
+        "anchors": {
+            "1": "Provides only a single or one-sided treatment suggestion",
+            "3": "Covers main treatment measures but neglects supportive or follow-up measures",
+            "5": "Treatment comprehensive, covering main plan plus complications management, supportive measures, and follow-up plan"
+        },
+        "category": "Comprehensiveness of treatment principles"
+    },
+    {
+        "dimension": "From the patient’s perspective, is this doctor’s diagnosis and treatment acceptable?",
+        "anchors": {
+            "1": "Clearly lacks professionalism, superficial answer, not at a doctor’s level",
+            "3": "Some professionalism, but logic or expression insufficient, more like a junior doctor",
+            "5": "Highly professional, mature and comprehensive thinking, strongly gives the impression of a senior clinician"
+        },
+        "category": "Perceived clinical professionalism"
+    },
+    {
+        "dimension": "Do you think this 'doctor' is an AI or a real human doctor?",
+        "anchors": {
+            "1": "Very much like AI, completely unlike a human doctor",
+            "3": "Hard to tell, equally likely to be a doctor or AI",
+            "5": "Completely unlike AI, strongly resembles a human doctor"
+        },
+        "category": "AI perception"
+    }
+]

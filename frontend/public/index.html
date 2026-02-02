@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+  <title>
+    <%= htmlWebpackPlugin.options.title %>
+  </title>
+  <style>
+    /* 全局样式确保全屏显示 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-size: clamp(10px, 0.9vw, 14px);
+    }
+
+    #app {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* 确保所有元素都能正确响应视口大小 */
+    .root-container {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* 全局滚动条样式 */
+    ::-webkit-scrollbar {
+      width: clamp(4px, 0.5vw, 8px);
+      height: clamp(4px, 0.5vw, 8px);
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: clamp(2px, 0.3vw, 4px);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: clamp(2px, 0.3vw, 4px);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+
+    /* Firefox滚动条样式 */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #c1c1c1 #f1f1f1;
+    }
+
+    /* 确保可滚动容器正常工作 */
+    .scrollable {
+      overflow: auto;
+      overflow-x: hidden;
+    }
+
+    /* 响应式字体大小 */
+    @media (max-width: 1200px) {
+      html {
+        font-size: clamp(9px, 0.8vw, 13px);
+      }
+    }
+
+    @media (max-width: 768px) {
+      html {
+        font-size: clamp(8px, 0.7vw, 12px);
+      }
+    }
+
+    @media (max-width: 480px) {
+      html {
+        font-size: clamp(7px, 0.6vw, 11px);
+      }
+    }
+
+    @media (min-width: 1920px) {
+      html {
+        font-size: clamp(12px, 1vw, 16px);
+      }
+    }
+
+    @media (max-height: 600px) {
+      html {
+        font-size: clamp(8px, 0.6vw, 12px);
+      }
+    }
+
+    /* 高分辨率屏幕优化 */
+    @media (-webkit-min-device-pixel-ratio: 2),
+    (min-resolution: 192dpi) {
+      * {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+    }
+
+    /* 减少动画（用户偏好） */
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <noscript>
+    <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled.
+        Please enable it to continue.</strong>
+  </noscript>
+  <div id="app"></div>
+  <!-- built files will be auto injected -->
+</body>
+
+</html>
