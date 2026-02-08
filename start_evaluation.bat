@@ -22,7 +22,7 @@ if "!conda_env!"=="" set "conda_env=base"
 
 echo Using environment: !conda_env!
 echo.
-cd ..
+cd .
 echo [1/2] Starting backend service (port 5001)...
 cd backend
 start "CHI26 Backend - Evaluation" cmd /k "call conda activate !conda_env! && python run_evaluation.py"

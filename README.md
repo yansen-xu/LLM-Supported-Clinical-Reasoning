@@ -8,6 +8,17 @@ This medical diagnostic assessment and testing platform is developed for our CHI
 
 Please note that in our open-source version, we provide only the original case files and corresponding response records for **Case 8** and **Case 9** presented in the article, along with response records from different LLMs and physicians with varying levels of clinical experience.
 
+### Cite
+
+```latex
+@article{xu2026trust,
+  title={" Do I Trust the AI?" Towards Trustworthy AI-Assisted Diagnosis: Understanding User Perception in LLM-Supported Reasoning},
+  author={Xu, Yuansong and Zhu, Yichao and Wang, Haokai and Wu, Yuchen and Ouyang, Yang and Li, Hanlu and Zhou, Wenzhe and Liu, Xinyu and Jiang, Chang and Li, Quan},
+  journal={arXiv preprint arXiv:2601.19540},
+  year={2026}
+}
+```
+
 ### Analysis Mode
 
 ![1769502560760](image/README/1769502560760.png)
@@ -38,10 +49,10 @@ Please note that in our open-source version, we provide only the original case f
 # Enter backend directory
 cd backend
 
-# Create conda virtual environment named "diagnosis_testing" (Python版本可根据项目需求调整，例如python=3.9/3.10)
+# Create conda virtual environment named "diagnosis_testing" 
 conda create -n diagnosis_testing python=3.9 -y
 
-# Activate the conda environment (跨Windows/MacOS/Linux通用, Windows终端需使用Anaconda Prompt或配置conda环境变量)
+# Activate the conda environment 
 conda activate diagnosis_testing
 
 # Install dependencies from requirements.txt
@@ -134,6 +145,7 @@ npm run evaluation
 ```
 
 ---
+
 ## Systemta Flow and File Structure
 
 ### Core Data Directory Structure
